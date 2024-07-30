@@ -1,0 +1,77 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
+using UnityEngine;
+using UnityEngine.AI;
+
+public class SetTerrainObstaclesStatic : MonoBehaviour
+{
+    static TreeInstance[] Obstacles;
+    static Terrain terrain;
+    static bool isError;
+
+    public static void GenerateTreeObstacles(Terrain _terrain, string[] _includedObstaclesNames)
+    {
+        terrain = _terrain;
+        Obstacles = terrain.terrainData.treeInstances;
+
+
+        GameObject parent = new GameObject("Tree_Obstacles");
+        parent.transform.SetParent(terrain.transform);
+
+        int i = 0;
+        foreach (TreeInstance obstacle in Obstacles)
+        {
+            GameObject obstacleTerrainObject = terrain.terrainData.treePrototypes[obstacle.prototypeIndex].prefab;
+            if (_includedObstaclesNames.Contains(obstacleTerrainObject.name))
+            {
+
+                Vector3 worldPosition = Vector3.Scale(obstacle.position, terrain.terrainData.size) + terrain.transform.position;
+                if (true)
+                {
+
+                    Quaternion tempRot = Quaternion.AngleAxis(obstacle.rotation * Mathf.Rad2Deg, Vector3.up);
+
+                    GameObject obstacleObject = new GameObject("Obstacle" + i);
+                    obstacleObject.transform.SetParent(parent.transform);
+                    obstacleObject.transform.position = worldPosition;
+                    obstacleObject.transform.rotation = tempRot;
+
+                    NavMeshObstacle obstacleComponent = obstacleObject.AddComponent<NavMeshObstacle>();
+                    obstacleComponent.carving = true;
+                    obstacleComponent.carveOnlyStationary = true;
+
+                    Collider collider = obstacleTerrainObject.GetComponent<Collider>();
+                    if (collider == null)
+                    {
+                        isError = true;
+                        Debug.LogWarning("ERROR  There is no CapsuleCollider or BoxCollider attached to ''" + obstacleTerrainObject.name + "'' please add one of them.");
+                        break;
+                    }
+                    else
+                    {
+                        if (collider.GetType() == typeof(CapsuleCollider))
+                        {
+                            CapsuleCollider capsuleColl = obstacleTerrainObject.GetComponent<CapsuleCollider>();
+                            obstacleComponent.shape = NavMeshObstacleShape.Capsule;
+                            obstacleComponent.center = capsuleColl.center;
+                            obstacleComponent.radius = capsuleColl.radius;
+                            obstacleComponent.height = capsuleColl.height;
+                        }
+                        else if (collider.GetType() == typeof(BoxCollider))
+                        {
+                            BoxCollider boxColl = obstacleTerrainObject.GetComponent<BoxCollider>();
+                            obstacleComponent.shape = NavMeshObstacleShape.Box;
+                            obstacleComponent.center = boxColl.center;
+                            obstacleComponent.size = boxColl.size;
+                        }
+                    }
+
+                    i++;
+                }
+            }
+        }
+        if (!isError) Debug.Log("All selectet NavMeshObstacles were succesfully added to your Scene");
+    }
+}
