@@ -9,6 +9,13 @@ public class ObstaclesGeneratorWindow : EditorWindow
     private List<string> obstacleNames;
     private List<string> selectedObstacles;
 
+    private bool useVolume = false;
+
+    private GameObject selectionObject;
+    private SelectionVolumeGizmos gizmo;
+    private Vector3 center = Vector3.zero;
+    private Vector3 size = Vector3.one;
+
     [MenuItem("Window/Terrain Obstacles Generator")]
     public static void OpenWindow()
     {
@@ -108,6 +115,48 @@ public class ObstaclesGeneratorWindow : EditorWindow
                 {
                     EditorGUILayout.LabelField("No obstacles selected.");
                 }
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.BeginHorizontal();
+                {
+                    EditorGUILayout.LabelField("Use selection volume", EditorStyles.boldLabel);
+                    useVolume = EditorGUILayout.Toggle(useVolume);
+                }
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.Space();
+
+                if (useVolume)
+                {
+                    if (selectionObject == null)
+                    {
+                        selectionObject = new GameObject("SelectionVolumeGizmo");
+                        selectionObject.transform.SetParent(terrain.transform);
+                        gizmo = selectionObject.AddComponent<SelectionVolumeGizmos>();
+
+                    }
+
+                    center = EditorGUILayout.Vector3Field("Center", center);
+                    size = EditorGUILayout.Vector3Field("Size", size);
+
+                    // Ensure properties are updated
+                    if (gizmo != null)
+                    {
+                        gizmo.center = center;
+                        gizmo.size = size;
+                    }
+                }
+                else
+                {
+                    if (selectionObject != null)
+                    {
+                        DestroyImmediate(selectionObject);
+                        selectionObject = null;
+                        center = Vector3.zero;
+                        size = Vector3.zero;
+                    }
+                }
             }
             lastTerrain = terrain;
 
@@ -124,7 +173,7 @@ public class ObstaclesGeneratorWindow : EditorWindow
                         return;
                     }
 
-                    SetTerrainObstaclesStatic.GenerateTreeObstacles(terrain, selectedObstacles.ToArray());
+                    SetTerrainObstaclesStatic.GenerateTreeObstacles(terrain, selectedObstacles.ToArray(), center, size);
                 }
                 GUILayout.Space(20);
             }

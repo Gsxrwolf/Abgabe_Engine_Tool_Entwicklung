@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,7 +8,7 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
     static Terrain terrain;
     static bool isError;
 
-    public static void GenerateTreeObstacles(Terrain _terrain, string[] _includedObstaclesNames)
+    public static void GenerateTreeObstacles(Terrain _terrain, string[] _includedObstaclesNames, Vector3 _center = new Vector3(), Vector3 _size = new Vector3())
     {
         terrain = _terrain;
         Obstacles = terrain.terrainData.treeInstances;
@@ -28,7 +25,7 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
             {
 
                 Vector3 worldPosition = Vector3.Scale(obstacle.position, terrain.terrainData.size) + terrain.transform.position;
-                if (true)
+                if (CheckPos(worldPosition, _center, _size))
                 {
 
                     Quaternion tempRot = Quaternion.AngleAxis(obstacle.rotation * Mathf.Rad2Deg, Vector3.up);
@@ -73,5 +70,16 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
             }
         }
         if (!isError) Debug.Log("All selectet NavMeshObstacles were succesfully added to your Scene");
+    }
+
+    private static bool CheckPos(Vector3 _pos, Vector3 _center, Vector3 _size)
+    {
+        if(_center ==  Vector3.zero && _size == Vector3.zero) return true;
+
+        Vector3 halfSize = _size * 0.5f;
+        Vector3 min = _center - halfSize;
+        Vector3 max = _center + halfSize;
+
+        return (_pos.x >= min.x && _pos.x <= max.x) && (_pos.y >= min.y && _pos.y <= max.y) && (_pos.z >= min.z && _pos.z <= max.z);
     }
 }
