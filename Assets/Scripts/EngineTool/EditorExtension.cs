@@ -14,7 +14,7 @@ public class ObstaclesGeneratorWindow : EditorWindow
     private GameObject selectionObject;
     private SelectionVolumeGizmos gizmo;
     private Vector3 center = Vector3.zero;
-    private Vector3 size = Vector3.one;
+    private Vector3 size = Vector3.zero;
 
     [MenuItem("Window/Terrain Obstacles Generator")]
     public static void OpenWindow()
@@ -26,7 +26,7 @@ public class ObstaclesGeneratorWindow : EditorWindow
 
     private void OnGUI()
     {
-        GUILayout.BeginVertical();
+        EditorGUILayout.BeginVertical();
         {
             EditorGUILayout.Space();
 
@@ -134,13 +134,11 @@ public class ObstaclesGeneratorWindow : EditorWindow
                         selectionObject = new GameObject("SelectionVolumeGizmo");
                         selectionObject.transform.SetParent(terrain.transform);
                         gizmo = selectionObject.AddComponent<SelectionVolumeGizmos>();
-
                     }
 
                     center = EditorGUILayout.Vector3Field("Center", center);
                     size = EditorGUILayout.Vector3Field("Size", size);
 
-                    // Ensure properties are updated
                     if (gizmo != null)
                     {
                         gizmo.center = center;
@@ -160,11 +158,11 @@ public class ObstaclesGeneratorWindow : EditorWindow
             }
             lastTerrain = terrain;
 
-            GUILayout.Space(10);
+            EditorGUILayout.Space(10);
 
-            GUILayout.BeginHorizontal();
+            EditorGUILayout.BeginHorizontal();
             {
-                GUILayout.Space(20);
+                EditorGUILayout.Space(20);
                 if (GUILayout.Button("Generate Obstacles"))
                 {
                     if (terrain == null)
@@ -172,13 +170,18 @@ public class ObstaclesGeneratorWindow : EditorWindow
                         Debug.LogError("Please assign a terrain.");
                         return;
                     }
+                    else if (selectedObstacles.Count <= 0)
+                    {
+                        Debug.LogError("Please select Obstacles.");
+                        return;
+                    }
 
                     SetTerrainObstaclesStatic.GenerateTreeObstacles(terrain, selectedObstacles.ToArray(), center, size);
                 }
-                GUILayout.Space(20);
+                EditorGUILayout.Space(20);
             }
-            GUILayout.EndHorizontal();
+            EditorGUILayout.EndHorizontal();
         }
-        GUILayout.EndVertical();
+        EditorGUILayout.EndVertical();
     }
 }

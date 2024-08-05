@@ -1,4 +1,5 @@
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,8 +14,16 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
         terrain = _terrain;
         Obstacles = terrain.terrainData.treeInstances;
 
+        if(terrain.transform.childCount > 0)
+        {
+            if (terrain.transform.GetChild(0).name == "Terrain_Obstacles")
+            {
+                DestroyImmediate(terrain.transform.GetChild(0).gameObject);
+                Debug.Log("Old NavMeshObstacles were succesfully deleted");
+            }
+        }
 
-        GameObject parent = new GameObject("Tree_Obstacles");
+        GameObject parent = new GameObject("Terrain_Obstacles");
         parent.transform.SetParent(terrain.transform);
 
         int i = 0;
@@ -28,29 +37,36 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
                 if (CheckPos(worldPosition, _center, _size))
                 {
 
-                    Quaternion tempRot = Quaternion.AngleAxis(obstacle.rotation * Mathf.Rad2Deg, Vector3.up);
 
-                    GameObject obstacleObject = new GameObject("Obstacle" + i);
-                    obstacleObject.transform.SetParent(parent.transform);
-                    obstacleObject.transform.position = worldPosition;
-                    obstacleObject.transform.rotation = tempRot;
 
-                    NavMeshObstacle obstacleComponent = obstacleObject.AddComponent<NavMeshObstacle>();
-                    obstacleComponent.carving = true;
-                    obstacleComponent.carveOnlyStationary = true;
+                    Collider[] colliders = obstacleTerrainObject.GetComponents<Collider>();
 
-                    Collider collider = obstacleTerrainObject.GetComponent<Collider>();
-                    if (collider == null)
+                    if (colliders.Count() <= 0)
                     {
                         isError = true;
                         Debug.LogWarning("ERROR  There is no CapsuleCollider or BoxCollider attached to ''" + obstacleTerrainObject.name + "'' please add one of them.");
+                        Destroy(parent);
                         break;
                     }
-                    else
+
+                    foreach (Collider collider in colliders)
                     {
+
+                        Quaternion tempRot = Quaternion.AngleAxis(obstacle.rotation * Mathf.Rad2Deg, Vector3.up);
+
+                        GameObject obstacleObject = new GameObject("Obstacle" + i);
+                        obstacleObject.transform.SetParent(parent.transform);
+                        obstacleObject.transform.position = worldPosition;
+                        obstacleObject.transform.rotation = tempRot;
+
+
+                        NavMeshObstacle obstacleComponent = obstacleObject.AddComponent<NavMeshObstacle>();
+                        obstacleComponent.carving = true;
+                        obstacleComponent.carveOnlyStationary = true;
+
                         if (collider.GetType() == typeof(CapsuleCollider))
                         {
-                            CapsuleCollider capsuleColl = obstacleTerrainObject.GetComponent<CapsuleCollider>();
+                            CapsuleCollider capsuleColl = (CapsuleCollider)collider;
                             obstacleComponent.shape = NavMeshObstacleShape.Capsule;
                             obstacleComponent.center = capsuleColl.center;
                             obstacleComponent.radius = capsuleColl.radius;
@@ -58,7 +74,7 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
                         }
                         else if (collider.GetType() == typeof(BoxCollider))
                         {
-                            BoxCollider boxColl = obstacleTerrainObject.GetComponent<BoxCollider>();
+                            BoxCollider boxColl = (BoxCollider)collider;
                             obstacleComponent.shape = NavMeshObstacleShape.Box;
                             obstacleComponent.center = boxColl.center;
                             obstacleComponent.size = boxColl.size;
@@ -74,7 +90,7 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
 
     private static bool CheckPos(Vector3 _pos, Vector3 _center, Vector3 _size)
     {
-        if(_center ==  Vector3.zero && _size == Vector3.zero) return true;
+        if (_center == Vector3.zero && _size == Vector3.zero) return true;
 
         Vector3 halfSize = _size * 0.5f;
         Vector3 min = _center - halfSize;
