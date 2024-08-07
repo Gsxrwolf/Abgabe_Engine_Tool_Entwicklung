@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -14,12 +15,20 @@ public class SetTerrainObstaclesStatic : MonoBehaviour
         terrain = _terrain;
         Obstacles = terrain.terrainData.treeInstances;
 
-        if(terrain.transform.childCount > 0)
+        if (terrain.transform.childCount > 0)
         {
-            if (terrain.transform.GetChild(0).name == "Terrain_Obstacles")
+            List<Transform> allChilds = new List<Transform>();
+            for (int k = 0; k < terrain.transform.childCount; k++)
             {
-                DestroyImmediate(terrain.transform.GetChild(0).gameObject);
-                Debug.Log("Old NavMeshObstacles were succesfully deleted");
+                allChilds.Add(terrain.transform.GetChild(k));
+            }
+            foreach (Transform child in allChilds)
+            {
+                if (child.name == "Terrain_Obstacles")
+                {
+                    DestroyImmediate(child.gameObject);
+                    Debug.Log("Old NavMeshObstacles were succesfully deleted");
+                }
             }
         }
 

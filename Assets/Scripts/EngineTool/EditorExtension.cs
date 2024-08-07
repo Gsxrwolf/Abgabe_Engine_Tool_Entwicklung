@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,7 +24,16 @@ public class ObstaclesGeneratorWindow : EditorWindow
         window.minSize = new Vector2(250, 250);
         window.Show();
     }
-
+    private void OnBecameInvisible()
+    {
+        if(useVolume)
+        {
+            DestroyImmediate(selectionObject);
+            selectionObject = null;
+            center = Vector3.zero;
+            size = Vector3.zero;
+        }
+    }
     private void OnGUI()
     {
         EditorGUILayout.BeginVertical();
@@ -184,4 +194,6 @@ public class ObstaclesGeneratorWindow : EditorWindow
         }
         EditorGUILayout.EndVertical();
     }
+
+    
 }
