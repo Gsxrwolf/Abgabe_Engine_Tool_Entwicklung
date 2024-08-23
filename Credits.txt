@@ -1,9 +1,0 @@
-SCRIPTS:
-Base idea: Unity-NavMesh-adding-Obstacles-To-Terrain-Trees by Malikir324 https://github.com/Malikir324/Unity-NavMesh-adding-Obstacles-To-Terrain-Trees
-
-ART:
-Lowpoly Environment - Nature Free - MEDIEVAL FANTASY SERIES by Polytope Studio https://assetstore.unity.com/packages/3d/environments/lowpoly-environment-nature-free-medieval-fantasy-series-187052
-
-
-AUDIO:
-
